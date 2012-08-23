@@ -5,6 +5,8 @@
 		die('Direct access to this script is forbidden.');
 	}
 	
+	$moodleBaseURL = $CFG->wwwroot;
+	
 	@date_default_timezone_set('UTC');	
 
 	function startsWith($haystack, $needle)
@@ -71,22 +73,20 @@
 				if (strcmp($hash,$expectedHash) !== 0)
 				{	
 					add_to_log(SITEID, 'collabco_sso', 'error', 'auth.php', "Bad hash: " . $username);
-					error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Bad hash:  $username  " . $_SERVER['HTTP_USER_AGENT']);
-					echo "BAD HASH - " . $hash . " != " . $expectedHash;
+					error_log('[client '.getremoteaddr()."]  $moodleBaseURL  Bad hash:  $username  " . $_SERVER['HTTP_USER_AGENT']);
 					return false;
 				}
 				
 				if (startsWith($redirect, "http://") || startsWith($redirect, "www."))
 				{
 					add_to_log(SITEID, 'collabco_sso', 'error', 'auth.php', "Illegal redirect: " . $redirect);
-					error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Illegal redirect:  $redirect  " . $_SERVER['HTTP_USER_AGENT']);
-					echo "BAD REDIRECT";
+					error_log('[client '.getremoteaddr()."]  $moodleBaseURL  Illegal redirect:  $redirect  " . $_SERVER['HTTP_USER_AGENT']);
 					return false;
 				}
 			
 				if (isloggedin() && !isguestuser()) 
 				{
-				   redirect($CFG->wwwroot . "/" . $redirect);
+				   redirect($moodleBaseURL . "/" . $redirect);
 				   return false;
 				}
 				
@@ -104,15 +104,13 @@
 						
 						if (!empty($user->suspended)) {
 							add_to_log(SITEID, 'collabco_sso', 'error', 'auth.php', "Suspended login: " . $username, 0, $user->id);
-							error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Suspended Login:  $username  ".$_SERVER['HTTP_USER_AGENT']);
-							echo "USER SUSPENDED";
+							error_log('[client '.getremoteaddr()."]  $moodleBaseURL  Suspended Login:  $username  ".$_SERVER['HTTP_USER_AGENT']);
 							return false;
 						}
 						
 						if ($auth=='nologin' or !is_enabled_auth($auth)) {
 							add_to_log(SITEID, 'collabco_sso', 'error', 'auth.php', "Disabled login: " . $username, 0, $user->id);
-							error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Disabled Login:  $username  ".$_SERVER['HTTP_USER_AGENT']);
-							echo "BAD AUTH";
+							error_log('[client '.getremoteaddr()."]  $moodleBaseURL  Disabled Login:  $username  ".$_SERVER['HTTP_USER_AGENT']);
 							return false;
 						}		
 
@@ -120,11 +118,11 @@
 						
 						if (user_not_fully_set_up($USER)) 
 						{
-						   $urltogo = $CFG->wwwroot . "/user/edit.php";
+						   $urltogo = $moodleBaseURL . "/user/edit.php";
 						} 
 						else
 						{
-						   $urltogo = $CFG->wwwroot . "/" . $redirect;
+						   $urltogo = $moodleBaseURL . "/" . $redirect;
 						}
 						
 						redirect($urltogo);
@@ -144,7 +142,7 @@
 		function config_form($config, $err, $user_fields) 
 		{
 			global $CFG, $OUTPUT;
-			echo $OUTPUT->notification('Sorry, no config options');
+			echo $OUTPUT->notification('There are no config options for this plugin');
 			return;
 		}
 	}
